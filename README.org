@@ -1,0 +1,4 @@
+* pizzacalc
+
+  Ever wondered which pizza size from your local delivery service is the cheapest per area unit?
+  This single page provides an interactive table to calculate this easily.

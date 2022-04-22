@@ -1,0 +1,145 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pizzacalc</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: sans-serif;
+        background-color: #501f3a;
+        color: #ccc;
+        padding: 0px 10px;
+      }
+
+      h1 {
+        font-weight: normal;
+        padding: 15px 20px;
+        border-bottom: 5px solid #ccc;
+        border-top: 5px solid #cb2d6f;
+      }
+      
+      p {
+        line-height: 1.5;
+        text-align: justify;
+        max-width: 600px;
+      }
+      
+      table {
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      tr {
+        padding: 10px;
+      }
+
+      th {
+        padding-bottom: 10px;
+      }
+      
+      td {
+        padding: 5px;
+        text-align: center;
+      }
+
+      input[type="text"] {
+        width: 110px;
+        padding: 10px;
+        background-color: #ccc;
+        color: #501f3a;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>pizzacalc</h1>
+    <p>Ever wondered which pizza size from your local delivery service is the cheapest per area unit? Fill out the table below and find out.</p>
+    <p>Units are up to you but keep them consistent across the table. <b>Dimension</b> can be either the diameter of the pizza or the edge length in the form WIDTHxHEIGHT.</p>
+    <table id="pizza-table">
+      <tr><th>Dimension</th><th>Price</th><th>Price per Area Unit²</th></tr>
+      <tr><td><input type="text" placeholder="Diameter, WxH" onchange="rebuild()"></td><td><input type="text" placeholder="Price" onchange="rebuild()"></td><td></td></tr>
+    </table>
+    <script>
+
+      table = document.getElementById("pizza-table");
+      
+      function cleanTable() {
+
+        // Iterate backwards through table rows
+        for (var i = table.rows.length - 1; i > 0; i--) {
+          var row = table.rows[i];
+
+          // Clear color
+          row.style.backgroundColor = "#501f3a";
+          row.style.fontWeight = "normal";
+
+          // Delete empty rows
+          var area = row.cells[0].getElementsByTagName("input")[0].value.trim();
+          var price = row.cells[1].getElementsByTagName("input")[0].value.trim();
+          if (area == "" && price == "") {
+            table.deleteRow(i);
+          }
+        }        
+      }
+      
+      function recalculate() {
+
+        var minPrice = Infinity;
+
+        // Iterate over table rows
+        for (var i = 1, row; row = table.rows[i]; i++) {
+
+          // Get area as array
+          var areaArray = row.cells[0].getElementsByTagName("input")[0].value.toLowerCase().replace(",", ".").split("x");
+
+          // Calculate area of round pizza
+          if (areaArray.length == 1) {
+            var area = (areaArray[0] / 2) ** 2 * Math.PI;
+          }
+          // Calculate area of rectangular pizza
+          else {
+            var area = areaArray[0] * areaArray[1];
+          }
+
+          // Calculate price if possible
+          var price = row.cells[1].getElementsByTagName("input")[0].value.replace(",", ".");
+          var result = row.cells[2];
+          if (area != "" && !isNaN(area) && price != "" && !isNaN(price)) {
+            var pricePerArea = Number((price / area).toFixed(4))
+            result.innerHTML = pricePerArea;
+            if (pricePerArea < minPrice) {
+              minPrice = pricePerArea;
+            }
+          }
+          else {
+            result.innerHTML = "";
+          }
+        }
+
+        // Set color of cheapest prices
+        for (var i = 1, row; row = table.rows[i]; i++) {
+          if (row.cells[2].innerHTML == minPrice) {
+            row.style.backgroundColor = "#cb2d6f";
+            row.style.fontWeight = "bold";
+          }
+        }
+      }
+
+      function addEmptyRow() {
+        // Add empty row to end of table
+        table.insertRow(-1);
+        table.rows[table.rows.length - 1].innerHTML = '<td><input type="text" placeholder="Diameter, WxH" onchange="rebuild()"></td><td><input type="text" placeholder="Price" onchange="rebuild()"></td><td></td>';
+      }
+
+      function rebuild() {
+        cleanTable();
+        recalculate();
+        addEmptyRow();
+      }
+
+    </script>
+  </body>
+</html>
